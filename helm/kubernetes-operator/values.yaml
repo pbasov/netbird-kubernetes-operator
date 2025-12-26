@@ -184,6 +184,12 @@ ingress:
     #   sourceGroups:
     #   - All
 
+# NBNodePeer controller configuration
+# Automatically creates NetBird setup keys for Kubernetes nodes
+nodePeer:
+  # Enable the NBNodePeer controller
+  enabled: false
+
 cluster:
   # Cluster DNS name (used for webhooks certificates and for network resource DNS names)
   dns: svc.cluster.local

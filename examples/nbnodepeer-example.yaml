@@ -1,0 +1,28 @@
+apiVersion: netbird.io/v1
+kind: NBNodePeer
+metadata:
+  name: worker-nodes
+spec:
+  # Select nodes (adjust labels to match your cluster)
+  # Common patterns:
+  #   node-role.kubernetes.io/control-plane: "true"  (k0s)
+  #   node-role.kubernetes.io/control-plane: ""      (kubeadm)
+  #   kubernetes.io/os: linux                        (all linux nodes)
+  nodeSelector:
+    matchLabels:
+      kubernetes.io/os: linux
+
+  # Setup key configuration
+  setupKeyType: one-off        # or "reusable"
+  ephemeral: true              # auto-remove peer when offline >10min
+
+  # NetBird groups to assign peers to
+  autoGroups:
+    - "kubernetes-nodes"
+
+  # Where to create the secrets with setup keys
+  secretNamespace: netbird
+  secretNameTemplate: "nb-node-{{.NodeName}}"
+
+  # Revoke setup key when node is deleted
+  revokeOnDelete: true

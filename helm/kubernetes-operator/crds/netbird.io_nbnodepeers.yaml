@@ -1,0 +1,203 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.1
+  name: nbnodepeers.netbird.io
+spec:
+  group: netbird.io
+  names:
+    kind: NBNodePeer
+    listKind: NBNodePeerList
+    plural: nbnodepeers
+    singular: nbnodepeer
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: NBNodePeer is the Schema for the nbnodepeers API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NBNodePeerSpec defines the desired state of NBNodePeer.
+            properties:
+              autoGroups:
+                description: AutoGroups specifies the NetBird groups to assign the
+                  peer to.
+                items:
+                  type: string
+                minItems: 1
+                type: array
+              ephemeral:
+                default: true
+                description: Ephemeral when true, the peer will be auto-removed when
+                  offline for more than 10 minutes.
+                type: boolean
+              expiresIn:
+                description: ExpiresIn specifies the setup key expiration in seconds.
+                  0 means never expires.
+                type: integer
+              nodeSelector:
+                description: NodeSelector defines which nodes should have setup keys
+                  created.
+                properties:
+                  matchExpressions:
+                    description: matchExpressions is a list of label selector requirements.
+                      The requirements are ANDed.
+                    items:
+                      description: |-
+                        A label selector requirement is a selector that contains values, a key, and an operator that
+                        relates the key and values.
+                      properties:
+                        key:
+                          description: key is the label key that the selector applies
+                            to.
+                          type: string
+                        operator:
+                          description: |-
+                            operator represents a key's relationship to a set of values.
+                            Valid operators are In, NotIn, Exists and DoesNotExist.
+                          type: string
+                        values:
+                          description: |-
+                            values is an array of string values. If the operator is In or NotIn,
+                            the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                            the values array must be empty. This array is replaced during a strategic
+                            merge patch.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                      required:
+                      - key
+                      - operator
+                      type: object
+                    type: array
+                    x-kubernetes-list-type: atomic
+                  matchLabels:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                      map is equivalent to an element of matchExpressions, whose key field is "key", the
+                      operator is "In", and the values array contains only "value". The requirements are ANDed.
+                    type: object
+                type: object
+                x-kubernetes-map-type: atomic
+              revokeOnDelete:
+                default: true
+                description: RevokeOnDelete when true, revokes the setup key in NetBird
+                  when the node is deleted.
+                type: boolean
+              secretNameTemplate:
+                default: nb-node-{{.NodeName}}
+                description: |-
+                  SecretNameTemplate defines the naming pattern for secrets.
+                  Available template variable: {{.NodeName}}
+                type: string
+              secretNamespace:
+                default: netbird-system
+                description: SecretNamespace defines where to create the secrets containing
+                  setup keys.
+                type: string
+              setupKeyType:
+                default: one-off
+                description: SetupKeyType specifies the type of setup key to create.
+                enum:
+                - one-off
+                - reusable
+                type: string
+              usageLimit:
+                description: |-
+                  UsageLimit specifies how many times the key can be used. 0 means unlimited.
+                  Only relevant for reusable keys.
+                type: integer
+            required:
+            - autoGroups
+            - nodeSelector
+            type: object
+          status:
+            description: NBNodePeerStatus defines the observed state of NBNodePeer.
+            properties:
+              conditions:
+                description: Conditions represent the current state of the NBNodePeer.
+                items:
+                  description: NBCondition defines a condition in NBSetupKey status.
+                  properties:
+                    lastProbeTime:
+                      description: Last time we probed the condition.
+                      format: date-time
+                      type: string
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: Human-readable message indicating details about
+                        last transition.
+                      type: string
+                    reason:
+                      description: Unique, one-word, CamelCase reason for the condition's
+                        last transition.
+                      type: string
+                    status:
+                      description: |-
+                        Status is the status of the condition.
+                        Can be True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type is the type of the condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              nodes:
+                additionalProperties:
+                  description: NBNodePeerNodeStatus tracks the status for a single
+                    node.
+                  properties:
+                    lastSyncTime:
+                      description: LastSyncTime is when this node was last synchronized.
+                      format: date-time
+                      type: string
+                    secretName:
+                      description: SecretName is the name of the secret containing
+                        the setup key.
+                      type: string
+                    setupKeyID:
+                      description: SetupKeyID is the ID of the setup key in NetBird.
+                      type: string
+                  required:
+                  - lastSyncTime
+                  - secretName
+                  - setupKeyID
+                  type: object
+                description: Nodes tracks the status of each managed node.
+                type: object
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

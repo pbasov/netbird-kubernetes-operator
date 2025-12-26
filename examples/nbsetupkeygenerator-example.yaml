@@ -1,0 +1,26 @@
+apiVersion: netbird.io/v1
+kind: NBSetupKeyGenerator
+metadata:
+  name: my-setup-key
+  namespace: netbird
+spec:
+  # Name of the setup key in NetBird
+  name: "my-custom-key"
+
+  # Setup key configuration
+  setupKeyType: one-off        # or "reusable"
+  ephemeral: true              # auto-remove peer when offline >10min
+
+  # NetBird groups to assign peers to (must exist in NetBird)
+  autoGroups:
+    - "ch0uglg21qng00bp0fd0"   # Replace with your group ID
+
+  # Optional: expiration and usage limits
+  # expiresIn: 86400           # seconds
+  # usageLimit: 1              # for reusable keys
+
+  # Secret configuration (defaults to CR name if not specified)
+  secretName: my-setup-key-secret
+
+  # Revoke setup key when CR is deleted
+  revokeOnDelete: true

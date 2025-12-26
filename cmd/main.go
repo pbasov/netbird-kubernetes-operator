@@ -76,6 +76,7 @@ func main() {
 		netbirdAPIKey                string
 		allowAutomaticPolicyCreation bool
 		defaultLabels                string
+		enableNodePeer               bool
 	)
 	flag.StringVar(&managementURL, "netbird-management-url", "https://api.netbird.io", "Management service URL")
 	flag.StringVar(&clientImage, "netbird-client-image", "netbirdio/netbird:latest", "Image for netbird client container")
@@ -104,6 +105,12 @@ func main() {
 		"default-labels",
 		"",
 		"Default labels used for all resources, in format key=value,key=value",
+	)
+	flag.BoolVar(
+		&enableNodePeer,
+		"enable-node-peer",
+		false,
+		"Enable NBNodePeer controller for automatic node setup key management",
 	)
 
 	// Controller generic flags
@@ -299,6 +306,34 @@ func main() {
 				os.Exit(1)
 			}
 		}
+
+		if enableNodePeer {
+			if err = (&controller.NBNodePeerReconciler{
+				Client:        mgr.GetClient(),
+				Scheme:        mgr.GetScheme(),
+				APIKey:        netbirdAPIKey,
+				ManagementURL: managementURL,
+				ClusterName:   clusterName,
+				DefaultLabels: defaultLabelsMap,
+			}).SetupWithManager(mgr); err != nil {
+				setupLog.Error(err, "unable to create controller", "controller", "NBNodePeer")
+				os.Exit(1)
+			}
+			setupLog.Info("NBNodePeer controller enabled")
+		}
+
+		// NBSetupKeyGenerator controller - always enabled when API key is present
+		if err = (&controller.NBSetupKeyGeneratorReconciler{
+			Client:        mgr.GetClient(),
+			Scheme:        mgr.GetScheme(),
+			APIKey:        netbirdAPIKey,
+			ManagementURL: managementURL,
+			DefaultLabels: defaultLabelsMap,
+		}).SetupWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create controller", "controller", "NBSetupKeyGenerator")
+			os.Exit(1)
+		}
+		setupLog.Info("NBSetupKeyGenerator controller enabled")
 	} else {
 		setupLog.Info("netbird API key not provided, ingress capabilities disabled")
 	}

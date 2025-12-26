@@ -25,3 +25,7 @@ go.work
 *.swp
 *.swo
 *~
+
+# AI assistant files
+.claude
+CLAUDE.md

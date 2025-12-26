@@ -1,0 +1,140 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.17.1
+  name: nbsetupkeygenerators.netbird.io
+spec:
+  group: netbird.io
+  names:
+    kind: NBSetupKeyGenerator
+    listKind: NBSetupKeyGeneratorList
+    plural: nbsetupkeygenerators
+    singular: nbsetupkeygenerator
+  scope: Namespaced
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: |-
+          NBSetupKeyGenerator is the Schema for the nbsetupkeygenerators API.
+          It creates a NetBird setup key and stores it in a Kubernetes secret.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: NBSetupKeyGeneratorSpec defines the desired state of NBSetupKeyGenerator.
+            properties:
+              autoGroups:
+                description: AutoGroups specifies the NetBird groups to assign the
+                  peer to.
+                items:
+                  type: string
+                minItems: 1
+                type: array
+              ephemeral:
+                default: true
+                description: Ephemeral when true, the peer will be auto-removed when
+                  offline for more than 10 minutes.
+                type: boolean
+              expiresIn:
+                description: ExpiresIn specifies the setup key expiration in seconds.
+                  0 means never expires.
+                type: integer
+              name:
+                description: Name is the name of the setup key in NetBird.
+                minLength: 1
+                type: string
+              revokeOnDelete:
+                default: true
+                description: RevokeOnDelete when true, revokes the setup key in NetBird
+                  when the CR is deleted.
+                type: boolean
+              secretName:
+                description: |-
+                  SecretName is the name of the secret to create with the setup key.
+                  If not specified, defaults to the NBSetupKeyGenerator name.
+                type: string
+              setupKeyType:
+                default: one-off
+                description: SetupKeyType specifies the type of setup key to create.
+                enum:
+                - one-off
+                - reusable
+                type: string
+              usageLimit:
+                description: |-
+                  UsageLimit specifies how many times the key can be used. 0 means unlimited.
+                  Only relevant for reusable keys.
+                type: integer
+            required:
+            - autoGroups
+            - name
+            type: object
+          status:
+            description: NBSetupKeyGeneratorStatus defines the observed state of NBSetupKeyGenerator.
+            properties:
+              conditions:
+                description: Conditions represent the current state of the NBSetupKeyGenerator.
+                items:
+                  description: NBCondition defines a condition in NBSetupKey status.
+                  properties:
+                    lastProbeTime:
+                      description: Last time we probed the condition.
+                      format: date-time
+                      type: string
+                    lastTransitionTime:
+                      description: Last time the condition transitioned from one status
+                        to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: Human-readable message indicating details about
+                        last transition.
+                      type: string
+                    reason:
+                      description: Unique, one-word, CamelCase reason for the condition's
+                        last transition.
+                      type: string
+                    status:
+                      description: |-
+                        Status is the status of the condition.
+                        Can be True, False, Unknown.
+                      type: string
+                    type:
+                      description: Type is the type of the condition.
+                      type: string
+                  required:
+                  - status
+                  - type
+                  type: object
+                type: array
+              secretName:
+                description: SecretName is the name of the secret containing the setup
+                  key.
+                type: string
+              setupKeyID:
+                description: SetupKeyID is the ID of the setup key in NetBird.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

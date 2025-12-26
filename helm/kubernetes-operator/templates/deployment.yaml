@@ -73,6 +73,9 @@ spec:
           {{- end }}
           - --default-labels="{{ join ", " $list }}"
           {{- end }}
+          {{- if .Values.nodePeer.enabled }}
+          - --enable-node-peer
+          {{- end }}
           ports:
             - name: webhook-server
               containerPort: {{ .Values.webhook.service.port }}
